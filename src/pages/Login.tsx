@@ -29,7 +29,7 @@ const Login = () => {
     setTimeout(() => {
       setIsLoading(false);
       toast.success("Login berhasil!");
-      navigate("/");
+      navigate("/dashboard");
     }, 1500);
   };
 
