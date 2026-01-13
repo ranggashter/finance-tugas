@@ -160,6 +160,7 @@ const Login = () => {
               </div>
               <button
                 type="button"
+                onClick={() => navigate("/forgot-password")}
                 className="text-sm text-primary hover:text-primary/80 font-medium transition-colors"
               >
                 Lupa Password?
