@@ -57,6 +57,11 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        "login-sidebar": {
+          DEFAULT: "hsl(var(--login-sidebar))",
+          foreground: "hsl(var(--login-sidebar-foreground))",
+        },
+        "login-highlight": "hsl(var(--login-highlight))",
       },
       borderRadius: {
         lg: "var(--radius)",
