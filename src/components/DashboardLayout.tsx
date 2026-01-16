@@ -1,25 +1,27 @@
 import { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { 
-  LayoutDashboard, 
-  Receipt, 
-  Users, 
-  MapPin, 
-  Wallet, 
-  Settings, 
+import axios from "axios";
+import {
+  LayoutDashboard, Receipt,
+  Users,
+  MapPin,
+  Wallet,
+  Settings,
   LogOut,
   Search,
   Eye,
   ChevronDown
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import UserDropdown from "./UserDropdown";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -42,7 +44,22 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [user, setUser] = useState<{ name: string } | null>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    if (!stored) return;
+
+    const parsed = JSON.parse(stored);
+
+    // kalau ingin fetch dari backend:
+    axios.get(`http://localhost:3000/api/users/${parsed.id}`)
+      .then(res => setUser(res.data))
+      .catch(() => setUser(parsed)); // fallback ke localStorage
+  }, []);
+
   const handleLogout = () => {
+    localStorage.removeItem("user");
     toast.success("Berhasil logout");
     navigate("/login-finance");
   };
@@ -72,11 +89,10 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
               <button
                 key={item.label}
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                  isActive(item.path)
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${isActive(item.path)
                     ? "bg-login-sidebar-foreground/20 text-login-sidebar-foreground"
                     : "text-login-sidebar-foreground/70 hover:bg-login-sidebar-foreground/10 hover:text-login-sidebar-foreground"
-                }`}
+                  }`}
               >
                 <item.icon className="h-5 w-5" />
                 {item.label}
@@ -90,11 +106,10 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
               <button
                 key={item.label}
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                  isActive(item.path)
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${isActive(item.path)
                     ? "bg-login-sidebar-foreground/20 text-login-sidebar-foreground"
                     : "text-login-sidebar-foreground/70 hover:bg-login-sidebar-foreground/10 hover:text-login-sidebar-foreground"
-                }`}
+                  }`}
               >
                 <item.icon className="h-5 w-5" />
                 {item.label}
@@ -125,8 +140,8 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Search" 
+              <Input
+                placeholder="Search"
                 className="pl-9 w-64 h-10 bg-muted/50 border-0"
               />
             </div>
@@ -134,15 +149,10 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
-                    K
-                  </div>
-                  <span className="text-sm font-medium text-foreground">Kaori000</span>
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                </button>
+                <UserDropdown userName={user?.name} />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
+
+              <DropdownMenuContent align="end" sideOffset={5} className="w-48 bg-white border rounded-md shadow-lg z-50">
                 <DropdownMenuItem>
                   <Eye className="h-4 w-4 mr-2" />
                   View Profile
@@ -153,6 +163,8 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+
           </div>
         </header>
 

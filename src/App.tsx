@@ -18,6 +18,7 @@ import DetailPencairanDana  from "./pages/Detailpencairan";
 import EditDetailPencairanDana from "./pages/editPencairan";
 import Pengaturan from "./pages/Pengaturan";
 import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -31,20 +32,20 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login-finance" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/transaksi" element={<Transaksi />} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/transaksi" element={<ProtectedRoute><Transaksi /></ProtectedRoute>} />
           <Route
   path="/transactions/:id"
-  element={<TransactionDetail />}
+  element={<ProtectedRoute><TransactionDetail /></ProtectedRoute>}
 />
-          <Route path="/mitra" element={<Mitra />} />
-<Route path="/mitra/:id" element={<DetailMitra />} />
-<Route path="/pos-mitra" element={<PosMitra />} />
-<Route path="/pos-mitra/:id" element={<DetailPosMitra />} />
-<Route path="/pencairan-dana" element={<PencairanDana />} />
-<Route path="/pencairan/:id" element={<DetailPencairanDana />} />
-<Route path="/pencairan/:id/edit" element={<EditDetailPencairanDana />} />
-<Route path="/pengaturan" element={<Pengaturan />} />
+          <Route path="/mitra" element={<ProtectedRoute><Mitra /></ProtectedRoute>} />
+<Route path="/mitra/:id" element={<ProtectedRoute><DetailMitra /></ProtectedRoute>} />
+<Route path="/pos-mitra" element={<ProtectedRoute><PosMitra /></ProtectedRoute>} />
+<Route path="/pos-mitra/:id" element={<ProtectedRoute><DetailPosMitra /></ProtectedRoute>} />
+<Route path="/pencairan-dana" element={<ProtectedRoute><PencairanDana /></ProtectedRoute>} />
+<Route path="/pencairan/:id" element={<ProtectedRoute><DetailPencairanDana /></ProtectedRoute>} />
+<Route path="/pencairan/:id/edit" element={<ProtectedRoute><EditDetailPencairanDana /></ProtectedRoute>} />
+<Route path="/pengaturan" element={<ProtectedRoute><Pengaturan /></ProtectedRoute>} />
 
 
 
