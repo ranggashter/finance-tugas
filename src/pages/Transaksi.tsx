@@ -1,153 +1,227 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import DashboardLayout from "@/components/DashboardLayout";
 
-const allTransactions = [
-  { no: 1, tanggal: "Rabu, 17 Okt 2023", driver: "Maulana Iqli", customer: "Ocba Putra", noTransaksi: "INV-12345678", noOrderan: "0001234567B9", status: "PROSES" },
-  { no: 2, tanggal: "Rabu, 17 Okt 2023", driver: "Maulana Iqli", customer: "Ocba Putra", noTransaksi: "INV-12345678", noOrderan: "0001234567B9", status: "SELESAI" },
-  { no: 3, tanggal: "Rabu, 17 Okt 2023", driver: "Maulana Iqli", customer: "Ocba Putra", noTransaksi: "INV-12345678", noOrderan: "0001234567B9", status: "BATAL" },
-  { no: 4, tanggal: "Rabu, 17 Okt 2023", driver: "Maulana Iqli", customer: "Ocba Putra", noTransaksi: "INV-12345678", noOrderan: "0001234567B9", status: "BATAL" },
-  { no: 5, tanggal: "Rabu, 17 Okt 2023", driver: "Maulana Iqli", customer: "Ocba Putra", noTransaksi: "INV-12345678", noOrderan: "0001234567B9", status: "SELESAI" },
-  { no: 6, tanggal: "Rabu, 17 Okt 2023", driver: "Maulana Iqli", customer: "Ocba Putra", noTransaksi: "INV-12345678", noOrderan: "0001234567B9", status: "BATAL" },
-  { no: 7, tanggal: "Rabu, 17 Okt 2023", driver: "Maulana Iqli", customer: "Ocba Putra", noTransaksi: "INV-12345678", noOrderan: "0001234567B9", status: "SELESAI" },
-  { no: 8, tanggal: "Rabu, 17 Okt 2023", driver: "Maulana Iqli", customer: "Ocba Putra", noTransaksi: "INV-12345678", noOrderan: "0001234567B9", status: "SELESAI" },
-  { no: 9, tanggal: "Rabu, 17 Okt 2023", driver: "Maulana Iqli", customer: "Ocba Putra", noTransaksi: "INV-12345678", noOrderan: "0001234567B9", status: "PROSES" },
-  { no: 10, tanggal: "Rabu, 17 Okt 2023", driver: "Maulana Iqli", customer: "Ocba Putra", noTransaksi: "INV-12345678", noOrderan: "0001234567B9", status: "SELESAI" },
-];
+type Transaction = {
+  id: number;
+  tanggal: string;
+  driver: string | null;
+  customer: string;
+  booking_number: string;
+  order_code?: string;
+  status: "pending" | "paid" | "cancelled";
+};
 
 const Transaksi = () => {
+  const navigate = useNavigate();
+
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("Semua");
   const [currentPage, setCurrentPage] = useState(1);
+
   const itemsPerPage = 10;
 
-  const filteredTransactions = statusFilter === "Semua" 
-    ? allTransactions 
-    : allTransactions.filter(tx => tx.status === statusFilter);
+  /* =========================
+     FETCH TRANSAKSI
+  ========================= */
+  useEffect(() => {
+    axios
+      .get("http://localhost:3000/api/bookings/transactions")
+      .then((res) => setTransactions(res.data))
+      .catch((err) =>
+        console.error("gagal ambil transaksi:", err.response?.data || err)
+      );
+  }, []);
+
+  /* =========================
+     FILTER & PAGINATION
+  ========================= */
+  const filteredTransactions =
+    statusFilter === "Semua"
+      ? transactions
+      : transactions.filter(
+          (tx) => mapStatus(tx.status) === statusFilter
+        );
 
   const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedTransactions = filteredTransactions.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedTransactions = filteredTransactions.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  /* =========================
+     HELPER
+  ========================= */
+  const mapStatus = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "PROSES";
+      case "paid":
+        return "SELESAI";
+      case "cancelled":
+        return "BATAL";
+      default:
+        return status;
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "PROSES": return "bg-yellow-500";
-      case "SELESAI": return "bg-green-500";
-      case "BATAL": return "bg-red-500";
-      default: return "bg-gray-500";
+      case "PROSES":
+        return "bg-yellow-500";
+      case "SELESAI":
+        return "bg-green-500";
+      case "BATAL":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
     }
   };
 
   return (
     <DashboardLayout title="Transaksi">
-      {/* Transaction Table */}
       <div className="bg-background rounded-xl border border-border overflow-hidden">
+        {/* Header */}
         <div className="p-5 border-b border-border flex items-center justify-between">
-          <h3 className="font-semibold text-foreground">Daftar Transaksi</h3>
-          
-          {/* Status Filter */}
+          <h3 className="font-semibold">Daftar Transaksi</h3>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <button className="flex items-center gap-2 text-sm text-muted-foreground">
                 Status: {statusFilter}
                 <ChevronDown className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setStatusFilter("Semua")}>
-                Semua
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStatusFilter("PROSES")}>
-                Proses
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStatusFilter("SELESAI")}>
-                Selesai
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setStatusFilter("BATAL")}>
-                Batal
-              </DropdownMenuItem>
+              {["Semua", "PROSES", "SELESAI", "BATAL"].map((s) => (
+                <DropdownMenuItem
+                  key={s}
+                  onClick={() => {
+                    setStatusFilter(s);
+                    setCurrentPage(1);
+                  }}
+                >
+                  {s}
+                </DropdownMenuItem>
+              ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        
+
+        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-muted/50">
               <tr>
-                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">NO.</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">TANGGAL</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">NAMA DRIVER</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">NAMA COSTUMER</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">NO. TRANSAKSI</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">NO ORDERAN</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">STATUS</th>
-                <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">AKSI</th>
+                {[
+                  "NO",
+                  "TANGGAL",
+                  "DRIVER",
+                  "CUSTOMER",
+                  "NO TRANSAKSI",
+                  "NO ORDER",
+                  "STATUS",
+                  "AKSI",
+                ].map((h) => (
+                  <th key={h} className="px-5 py-3 text-left text-xs">
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {paginatedTransactions.map((tx, i) => (
-                <tr key={i} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="px-5 py-4 text-sm text-foreground">{tx.no}</td>
-                  <td className="px-5 py-4 text-sm text-foreground">{tx.tanggal}</td>
-                  <td className="px-5 py-4 text-sm text-foreground">{tx.driver}</td>
-                  <td className="px-5 py-4 text-sm text-foreground">{tx.customer}</td>
-                  <td className="px-5 py-4 text-sm text-foreground">{tx.noTransaksi}</td>
-                  <td className="px-5 py-4 text-sm text-foreground">{tx.noOrderan}</td>
-                  <td className="px-5 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(tx.status)}`}>
-                      {tx.status}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4">
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Eye className="h-4 w-4" />
-                    </Button>
+              {paginatedTransactions.map((tx, i) => {
+                const statusText = mapStatus(tx.status);
+                return (
+                  <tr
+                    key={tx.id}
+                    className="border-b hover:bg-muted/30"
+                  >
+                    <td className="px-5 py-4">
+                      {startIndex + i + 1}
+                    </td>
+                    <td className="px-5 py-4">
+                      {new Date(tx.tanggal).toLocaleString("id-ID")}
+                    </td>
+                    <td className="px-5 py-4">
+                      {tx.driver ?? "-"}
+                    </td>
+                    <td className="px-5 py-4">
+                      {tx.customer}
+                    </td>
+                    <td className="px-5 py-4">
+                      {tx.booking_number}
+                    </td>
+                    <td className="px-5 py-4">
+                      {tx.order_code ?? tx.booking_number}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs text-white ${getStatusColor(
+                          statusText
+                        )}`}
+                      >
+                        {statusText}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() =>
+                          navigate(`/transaksi/detail/${tx.id}`)
+                        }
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {paginatedTransactions.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={8}
+                    className="text-center py-6 text-muted-foreground"
+                  >
+                    tidak ada data transaksi
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Pagination */}
-        <div className="p-4 border-t border-border flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            1 - {Math.min(itemsPerPage, filteredTransactions.length)} entries
-          </p>
-          <div className="flex items-center gap-2">
+        <div className="p-4 border-t border-border flex justify-between">
+          <span className="text-sm text-muted-foreground">
+            halaman {currentPage} dari {totalPages || 1}
+          </span>
+          <div className="flex gap-2">
             <Button
-              variant="outline"
               size="icon"
-              className="h-8 w-8"
+              variant="outline"
               disabled={currentPage === 1}
-              onClick={() => setCurrentPage(p => p - 1)}
+              onClick={() => setCurrentPage((p) => p - 1)}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            {[1, 2, 3].map((page) => (
-              <Button
-                key={page}
-                variant={currentPage === page ? "default" : "outline"}
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setCurrentPage(page)}
-              >
-                {page}
-              </Button>
-            ))}
-            <span className="text-muted-foreground">...</span>
             <Button
-              variant="outline"
               size="icon"
-              className="h-8 w-8"
+              variant="outline"
               disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(p => p + 1)}
+              onClick={() => setCurrentPage((p) => p + 1)}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>

@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import axios from "axios";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -15,23 +16,50 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!email || !password) {
-      toast.error("Mohon isi semua field");
-      return;
-    }
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    setIsLoading(true);
-    
-    // Simulate login - replace with actual auth logic
-    setTimeout(() => {
-      setIsLoading(false);
-      toast.success("Login berhasil!");
-      navigate("/dashboard");
-    }, 1500);
-  };
+  if (!email || !password) {
+    toast.error("Email dan password wajib diisi");
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    const response = await axios.post(
+      "http://localhost:3000/api/users/login",
+      { email, password }
+    );
+
+    toast.success(response.data.message);
+
+    // simpan user admin
+    localStorage.setItem(
+      "user",
+      JSON.stringify(response.data.user)
+    );
+
+    // redirect ke admin dashboard
+    navigate("/dashboard");
+
+  } catch (error) {
+    const status = error.response?.status;
+    const message = error.response?.data?.message;
+
+    if (status === 401) {
+      toast.error(message || "Email atau password salah");
+    } else if (status === 403) {
+      toast.error("Akses ditolak. Hanya admin yang dapat login");
+    } else {
+      toast.error("Terjadi kesalahan pada server");
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+
 
   return (
     <div className="min-h-screen flex">

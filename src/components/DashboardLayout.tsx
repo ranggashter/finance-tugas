@@ -44,7 +44,7 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
 
   const handleLogout = () => {
     toast.success("Berhasil logout");
-    navigate("/login");
+    navigate("/login-finance");
   };
 
   const isActive = (path: string) => location.pathname === path;

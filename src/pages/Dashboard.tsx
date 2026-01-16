@@ -1,171 +1,210 @@
-import { Eye, TrendingUp, Users } from "lucide-react";
+import { Eye, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
+import axios from "axios";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+
+export default function Dashboard() {
+  /* =========================
+     STATE
+  ========================= */
+  const [pendapatan, setPendapatan] = useState<number>(0);
+  const [chartPendapatan, setChartPendapatan] = useState<any[]>([]);
+
+  const [totalMitra, setTotalMitra] = useState<number>(0);
+  const [totalCustomer, setTotalCustomer] = useState<number>(0);
+
+  const [chartPesanan, setChartPesanan] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
+
+  const sortedChartPesanan = [...chartPesanan].sort(
+    (a, b) => b.total - a.total
+  );
+  const navigate = useNavigate();
 
 
+  /* =========================
+     FETCH DATA
+  ========================= */
+  useEffect(() => {
+    axios.get("http://localhost:3000/api/payments/pendapatan")
+      .then(res => setPendapatan(res.data.pendapatan ?? 0))
+      .catch(err => console.error(err));
+  }, []);
 
-const transactions = [
-  { no: 1, tanggal: "Rabu, 17 Okt 2023", driver: "Maulana Iqli", customer: "Ocba Putra", noTransaksi: "INV-12345678", noOrderan: "0001234567B9", status: "PROSES" },
-  { no: 2, tanggal: "Rabu, 17 Okt 2023", driver: "Maulana Iqli", customer: "Ocba Putra", noTransaksi: "INV-12345678", noOrderan: "0001234567B9", status: "SELESAI" },
-  { no: 3, tanggal: "Rabu, 17 Okt 2023", driver: "Maulana Iqli", customer: "Ocba Putra", noTransaksi: "INV-12345678", noOrderan: "0001234567B9", status: "BATAL" },
-  { no: 4, tanggal: "Rabu, 17 Okt 2023", driver: "Maulana Iqli", customer: "Ocba Putra", noTransaksi: "INV-12345678", noOrderan: "0001234567B9", status: "SELESAI" },
-];
+  useEffect(() => {
+    axios.get("http://localhost:3000/api/payments/pendapatan/chart")
+      .then(res => {
+        setChartPendapatan(
+          res.data.map((i: any) => ({
+            month: i.month_name,
+            value: Number(i.total),
+          }))
+        );
+      })
+      .catch(err => console.error(err));
+  }, []);
 
-const Dashboard = () => {
+  useEffect(() => {
+    axios.get("http://localhost:3000/api/users/count-by-role")
+      .then(res => {
+        setTotalMitra(res.data.mitra ?? 0);
+        setTotalCustomer(res.data.customer ?? 0);
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  useEffect(() => {
+    axios.get("http://localhost:3000/api/bookings/chart")
+      .then(res => setChartPesanan(res.data))
+      .catch(err => console.error(err));
+  }, []);
+
+  useEffect(() => {
+    axios.get("http://localhost:3000/api/bookings/transactions")
+      .then(res => setTransactions(res.data))
+      .catch(err => console.error(err));
+  }, []);
+
+  /* =========================
+     HELPER
+  ========================= */
+  const mapStatus = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "PROSES";
+      case "paid":
+        return "SELESAI";
+      case "cancelled":
+        return "BATAL";
+      default:
+        return status.toUpperCase();
+    }
+  };
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "PROSES": return "bg-yellow-500";
-      case "SELESAI": return "bg-green-500";
-      case "BATAL": return "bg-red-500";
-      default: return "bg-gray-500";
+      case "pending":
+        return "bg-yellow-500";
+      case "paid":
+        return "bg-green-500";
+      case "cancelled":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
     }
   };
 
+
   return (
     <DashboardLayout title="Dashboard">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            {/* Pendapatan Card */}
-            <div className="bg-background rounded-xl p-5 border border-border">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Pendapatan</span>
-                <span className="text-xs text-muted-foreground">Jun 2025 ▼</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-foreground">Rp 200.000,00</span>
-                <span className="text-muted-foreground">💰</span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">No. Rekening: 798 0283 9827 897</p>
-            </div>
+      {/* Statistik */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="bg-background rounded-xl p-5 border">
+          <p className="text-sm text-muted-foreground">Pendapatan</p>
+          <p className="text-2xl font-bold">
+            Rp {pendapatan.toLocaleString("id-ID")}
+          </p>
+        </div>
 
-            {/* Total Pengguna Mitra */}
-            <div className="bg-background rounded-xl p-5 border border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Users className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">10.213</p>
-                  <p className="text-xs text-muted-foreground">Total Pengguna Mitra</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Total Pengguna Customer */}
-            <div className="bg-background rounded-xl p-5 border border-border">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <Users className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">10.213</p>
-                  <p className="text-xs text-muted-foreground">Total Pengguna Costumer</p>
-                </div>
-              </div>
-            </div>
+        <div className="bg-background rounded-xl p-5 border flex gap-4">
+          <Users />
+          <div>
+            <p className="text-2xl font-bold">{totalMitra}</p>
+            <p className="text-xs text-muted-foreground">Total Pengguna Mitra</p>
           </div>
+        </div>
 
-          {/* Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Pendapatan Chart */}
-            <div className="bg-background rounded-xl p-5 border border-border">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="font-semibold text-foreground">Pendapatan</h3>
-                  <p className="text-xs text-muted-foreground">Pendapatan dari penjualan Nebeng</p>
-                </div>
-                <span className="text-xs text-muted-foreground">May 2023 ▼</span>
-              </div>
-              {/* Placeholder Chart */}
-              <div className="h-48 flex items-end justify-between gap-2 pt-4">
-                {["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Aug", "Sep", "Oct", "Nov", "Des"].map((month, i) => (
-                  <div key={month} className="flex-1 flex flex-col items-center gap-1">
-                    <div 
-                      className="w-full bg-primary/20 rounded-t transition-all hover:bg-primary/40"
-                      style={{ height: `${Math.random() * 100 + 40}px` }}
-                    />
-                    <span className="text-[10px] text-muted-foreground">{month}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Pesanan Chart */}
-            <div className="bg-background rounded-xl p-5 border border-border">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="font-semibold text-foreground">Pesanan</h3>
-                  <p className="text-xs text-muted-foreground">Total Pesanan</p>
-                </div>
-                <span className="text-xs text-muted-foreground">Jun 2025 ▼</span>
-              </div>
-              {/* Bar Chart Placeholder */}
-              <div className="h-48 flex items-end justify-center gap-8">
-                {[
-                  { label: "Nebeng Motor", height: 70, color: "bg-primary" },
-                  { label: "Nebeng Barang", height: 50, color: "bg-primary/70" },
-                  { label: "Nebeng Belanja", height: 40, color: "bg-primary/50" },
-                  { label: "Title Pesanan", height: 30, color: "bg-primary/30" },
-                ].map((item, i) => (
-                  <div key={i} className="flex flex-col items-center gap-2">
-                    <div 
-                      className={`w-12 ${item.color} rounded-t transition-all hover:opacity-80`}
-                      style={{ height: `${item.height * 2}px` }}
-                    />
-                    <span className="text-[10px] text-muted-foreground text-center max-w-16">{item.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+        <div className="bg-background rounded-xl p-5 border flex gap-4">
+          <Users />
+          <div>
+            <p className="text-2xl font-bold">{totalCustomer}</p>
+            <p className="text-xs text-muted-foreground">Total Pengguna Customer</p>
           </div>
+        </div>
+      </div>
 
-          {/* Transaction Table */}
-          <div className="bg-background rounded-xl border border-border overflow-hidden">
-            <div className="p-5 border-b border-border flex items-center justify-between">
-              <h3 className="font-semibold text-foreground">Daftar Transaksi</h3>
-              <span className="text-xs text-muted-foreground">May 2025 ▼</span>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-muted/50">
-                  <tr>
-                    <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">NO.</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">TANGGAL</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">NAMA DRIVER</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">NAMA COSTUMER</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">NO. TRANSAKSI</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">NO ORDERAN</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">STATUS</th>
-                    <th className="text-left text-xs font-medium text-muted-foreground px-5 py-3">AKSI</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transactions.map((tx, i) => (
-                    <tr key={i} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                      <td className="px-5 py-4 text-sm text-foreground">{tx.no}</td>
-                      <td className="px-5 py-4 text-sm text-foreground">{tx.tanggal}</td>
-                      <td className="px-5 py-4 text-sm text-foreground">{tx.driver}</td>
-                      <td className="px-5 py-4 text-sm text-foreground">{tx.customer}</td>
-                      <td className="px-5 py-4 text-sm text-foreground">{tx.noTransaksi}</td>
-                      <td className="px-5 py-4 text-sm text-foreground">{tx.noOrderan}</td>
-                      <td className="px-5 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(tx.status)}`}>
-                          {tx.status}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      {/* Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="bg-background p-5 border rounded-xl">
+          <h3 className="mb-4 font-semibold">Pendapatan</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={chartPendapatan}>
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Area dataKey="value" stroke="currentColor" fillOpacity={0.2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="bg-background p-5 border rounded-xl">
+          <h3 className="mb-4 font-semibold">Pesanan</h3>
+          <div className="flex items-end gap-8 h-48 justify-center">
+            {sortedChartPesanan.map((item, i) => (
+              <div key={i} className="text-center">
+                <div
+                  className="w-12 bg-primary rounded-t"
+                  style={{ height: `${item.total * 10}px` }}
+                />
+                <p className="text-xs mt-2">{item.label}</p>
+              </div>
+            ))}
           </div>
+        </div>
+      </div>
+
+      {/* TABEL TRANSAKSI */}
+      <div className="bg-background rounded-xl border overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-muted/50">
+            <tr>
+              {["NO", "TANGGAL", "DRIVER", "CUSTOMER", "JENIS", "ORDER", "STATUS", "AKSI"].map(h => (
+                <th key={h} className="px-4 py-3 text-xs text-left">{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {transactions.map((tx, i) => (
+              <tr key={tx.id} className="border-b">
+                <td className="px-4 py-3">{i + 1}</td>
+                <td className="px-4 py-3">
+                  {new Date(tx.tanggal).toLocaleDateString("id-ID")}
+                </td>
+                <td className="px-4 py-3">{tx.driver ?? "-"}</td>
+                <td className="px-4 py-3">{tx.customer}</td>
+                <td className="px-4 py-3">{tx.jenis}</td>
+                <td className="px-4 py-3">{tx.booking_number}</td>
+                <td className="px-5 py-4">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs text-white ${getStatusColor(tx.status)}`}
+                  >
+                    {mapStatus(tx.status)}
+                  </span>
+                </td>
+
+<td className="px-4 py-3">
+  <Button
+    size="icon"
+    variant="ghost"
+    onClick={() => navigate(`/transactions/${tx.id}`)}
+  >
+    <Eye className="h-4 w-4" />
+  </Button>
+</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </DashboardLayout>
   );
-};
-
-export default Dashboard;
+}
