@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
 import axios from "axios";
+import api from "@/lib/api";
 import {
   AreaChart,
   Area,
@@ -35,14 +36,18 @@ export default function Dashboard() {
   /* =========================
      FETCH DATA
   ========================= */
+  // total pendapatan
   useEffect(() => {
-    axios.get("http://localhost:3000/api/payments/pendapatan")
+    api
+      .get("/pendapatan")
       .then(res => setPendapatan(res.data.pendapatan ?? 0))
-      .catch(err => console.error(err));
+      .catch(err => console.error("pendapatan error:", err));
   }, []);
 
+   // chart pendapatan
   useEffect(() => {
-    axios.get("http://localhost:3000/api/payments/pendapatan/chart")
+    api
+      .get("/pendapatan/chart")
       .then(res => {
         setChartPendapatan(
           res.data.map((i: any) => ({
@@ -51,29 +56,33 @@ export default function Dashboard() {
           }))
         );
       })
-      .catch(err => console.error(err));
+      .catch(err => console.error("chart pendapatan error:", err));
   }, []);
 
+    // total user
   useEffect(() => {
-    axios.get("http://localhost:3000/api/users/count-by-role")
+    api.get("/users/count-by-role")
       .then(res => {
         setTotalMitra(res.data.mitra ?? 0);
         setTotalCustomer(res.data.customer ?? 0);
       })
-      .catch(err => console.error(err));
+      .catch(err => console.error("user count error:", err));
   }, []);
 
   useEffect(() => {
-    axios.get("http://localhost:3000/api/bookings/chart")
+    api.get("/bookings/chart")
       .then(res => setChartPesanan(res.data))
-      .catch(err => console.error(err));
+      .catch(err => console.error("chart pesanan error:", err));
   }, []);
 
   useEffect(() => {
-    axios.get("http://localhost:3000/api/bookings/transactions")
+    api.get("/bookings/transactions")
       .then(res => setTransactions(res.data))
-      .catch(err => console.error(err));
+      .catch(err => console.error("transactions error:", err));
   }, []);
+
+
+
 
   /* =========================
      HELPER
@@ -141,24 +150,36 @@ export default function Dashboard() {
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
-              <Area dataKey="value" stroke="currentColor" fillOpacity={0.2} />
+              <Area dataKey="value" fillOpacity={0.2} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
 
         <div className="bg-background p-5 border rounded-xl">
           <h3 className="mb-4 font-semibold">Pesanan</h3>
-          <div className="flex items-end gap-8 h-48 justify-center">
-            {sortedChartPesanan.map((item, i) => (
-              <div key={i} className="text-center">
-                <div
-                  className="w-12 bg-primary rounded-t"
-                  style={{ height: `${item.total * 10}px` }}
-                />
-                <p className="text-xs mt-2">{item.label}</p>
-              </div>
-            ))}
-          </div>
+<div className="flex items-end gap-8 h-48 justify-center">
+  {sortedChartPesanan.map((item, i) => (
+    <div key={i} className="text-center relative group">
+      {/* Tooltip */}
+      <div className="absolute -top-8 left-1/2 -translate-x-1/2
+                      bg-black text-white text-xs px-2 py-1 rounded
+                      opacity-0 group-hover:opacity-100 transition
+                      whitespace-nowrap">
+        {item.total} Pesanan
+      </div>
+
+      {/* Bar */}
+      <div
+        className="w-12 bg-primary rounded-t cursor-pointer"
+        style={{ height: `${item.total * 4}px` }}
+
+      />
+
+      <p className="text-xs mt-2">{item.label}</p>
+    </div>
+  ))}
+</div>
+
         </div>
       </div>
 

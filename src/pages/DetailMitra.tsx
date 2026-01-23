@@ -1,14 +1,16 @@
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useNavigate } from "react-router-dom";
 
 const DetailMitra = () => {
+  const navigate = useNavigate();
   return (
     <DashboardLayout title="Detail Data Mitra">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="icon">
-          <ChevronLeft className="w-5 h-5" />
+<Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <ChevronLeft />
         </Button>
         <h2 className="font-semibold text-lg">Detail Data Mitra</h2>
       </div>

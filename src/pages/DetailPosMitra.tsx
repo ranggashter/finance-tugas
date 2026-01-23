@@ -2,14 +2,16 @@ import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useNavigate } from "react-router-dom";
 
 const DetailPosMitra = () => {
+  const navigate = useNavigate();
   return (
     <DashboardLayout title="Detail Pos Mitra">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="icon">
-          <ChevronLeft className="w-5 h-5" />
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <ChevronLeft />
         </Button>
         <h2 className="font-semibold text-lg">Detail Pos Mitra</h2>
       </div>

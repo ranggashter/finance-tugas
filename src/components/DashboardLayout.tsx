@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
+import api from "@/lib/api";
 import {
   LayoutDashboard, Receipt,
   Users,
@@ -13,6 +13,17 @@ import {
   Eye,
   ChevronDown
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+
 import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
@@ -45,6 +56,8 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
   const location = useLocation();
 
   const [user, setUser] = useState<{ name: string } | null>(null);
+  const [openLogoutDialog, setOpenLogoutDialog] = useState(false);
+
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
@@ -53,7 +66,7 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
     const parsed = JSON.parse(stored);
 
     // kalau ingin fetch dari backend:
-    axios.get(`http://localhost:3000/api/users/${parsed.id}`)
+    api.get(`/users/${parsed.id}`)
       .then(res => setUser(res.data))
       .catch(() => setUser(parsed)); // fallback ke localStorage
   }, []);
@@ -120,13 +133,41 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
 
         {/* Logout Button */}
         <div className="p-4">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm bg-login-sidebar-foreground/10 text-login-sidebar-foreground hover:bg-login-sidebar-foreground/20 transition-colors"
-          >
-            <LogOut className="h-5 w-5" />
-            Keluar
-          </button>
+<AlertDialog>
+  <AlertDialogTrigger asChild>
+    <button
+      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm bg-login-sidebar-foreground/10 text-login-sidebar-foreground hover:bg-login-sidebar-foreground/20 transition-colors"
+    >
+      <LogOut className="h-5 w-5" />
+      Keluar
+    </button>
+  </AlertDialogTrigger>
+
+  <AlertDialogContent className="max-w-md">
+    <AlertDialogHeader className="text-center">
+      <AlertDialogTitle>
+        Apakah yakin ingin keluar dari akun Anda?
+      </AlertDialogTitle>
+    </AlertDialogHeader>
+
+    <div className="flex justify-center my-4">
+      <LogOut className="h-10 w-10 text-primary" />
+    </div>
+
+    <AlertDialogFooter className="flex-col gap-2">
+      <AlertDialogCancel className="w-full">
+        Batal
+      </AlertDialogCancel>
+      <AlertDialogAction
+        className="w-full bg-primary text-white"
+        onClick={handleLogout}
+      >
+        Keluar
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+
         </div>
       </aside>
 
@@ -147,22 +188,60 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
             </div>
 
             {/* User Menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <UserDropdown userName={user?.name} />
-              </DropdownMenuTrigger>
+<DropdownMenu modal={false}>
+  <DropdownMenuTrigger asChild>
+    <UserDropdown userName={user?.name} />
+  </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end" sideOffset={5} className="w-48 bg-white border rounded-md shadow-lg z-50">
-                <DropdownMenuItem>
-                  <Eye className="h-4 w-4 mr-2" />
-                  View Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+  <DropdownMenuContent align="end" sideOffset={5} className="w-48">
+    <DropdownMenuItem onClick={() => navigate("/pengaturan")}>
+      <Eye className="h-4 w-4 mr-2" />
+      View Profile
+    </DropdownMenuItem>
+
+    <DropdownMenuItem
+      onSelect={(e) => {
+        e.preventDefault();
+        setOpenLogoutDialog(true);
+      }}
+    >
+      <LogOut className="h-4 w-4 mr-2" />
+      Log out
+    </DropdownMenuItem>
+  </DropdownMenuContent>
+</DropdownMenu>
+
+<AlertDialog
+  open={openLogoutDialog}
+  onOpenChange={setOpenLogoutDialog}
+>
+  <AlertDialogContent className="max-w-md">
+    <AlertDialogHeader className="text-center">
+      <AlertDialogTitle>
+        Apakah yakin ingin keluar dari akun Anda?
+      </AlertDialogTitle>
+    </AlertDialogHeader>
+
+    <div className="flex justify-center my-4">
+      <LogOut className="h-10 w-10 text-primary" />
+    </div>
+
+    <AlertDialogFooter className="flex-col gap-2">
+      <AlertDialogCancel className="w-full">
+        Batal
+      </AlertDialogCancel>
+
+      <AlertDialogAction
+        className="w-full bg-primary text-white"
+        onClick={handleLogout}
+      >
+        Keluar
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+
+
 
 
           </div>

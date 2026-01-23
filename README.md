@@ -1,73 +1,97 @@
-# Welcome to your Lovable project
+# Finance Tugas - Nebeng Finance Dashboard
 
-## Project info
+Aplikasi dashboard finance untuk mengelola transaksi, mitra, dan pencairan dana.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## Tech Stack
 
-## How can I edit this code?
+- **Frontend**: React + TypeScript + Vite
+- **Backend**: Laravel (PHP)
+- **Database**: MySQL
+- **UI**: shadcn-ui + Tailwind CSS
 
-There are several ways of editing your application.
+## Setup
 
-**Use Lovable**
+### Frontend
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+```bash
+# Install dependencies
+npm install
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Frontend akan berjalan di `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Backend Laravel
 
-**Use GitHub Codespaces**
+```bash
+cd backend-laravel
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Install dependencies
+composer install
 
-## What technologies are used for this project?
+# Setup environment
+# Buat file .env dan konfigurasi database
 
-This project is built with:
+# Generate application key
+php artisan key:generate
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# Start server
+php artisan serve
+```
 
-## How can I deploy this project?
+Backend akan berjalan di `http://127.0.0.1:8000`
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## Konfigurasi Database
 
-## Can I connect a custom domain to my Lovable project?
+Buat file `.env` di folder `backend-laravel`:
 
-Yes, you can!
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=nebeng_bro
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## API Endpoints
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### Dashboard
+- `GET /api/pendapatan` - Total pendapatan
+- `GET /api/pendapatan/chart` - Chart pendapatan per bulan
+
+### Bookings
+- `GET /api/bookings/chart` - Chart pesanan
+- `GET /api/bookings/transactions` - Semua transaksi booking
+
+### Transactions
+- `GET /api/transactions/{id}` - Detail transaksi
+
+### Users
+- `GET /api/users/count-by-role` - Jumlah user per role
+- `GET /api/users/mitra` - Daftar user mitra
+- `POST /api/users/login` - Login admin
+- `GET /api/users/{id}` - Get user by ID
+- `GET /api/users/profile/{id}` - Get profile user
+- `PUT /api/users/profile/{id}` - Update profile
+- `PUT /api/users/account/{id}` - Update account (email/password)
+
+## Development
+
+### Build untuk production
+
+```bash
+npm run build
+```
+
+### Preview production build
+
+```bash
+npm run preview
+```
+
+## License
+
+ISC

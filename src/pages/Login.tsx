@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import axios from "axios";
+import api from "@/lib/api";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -27,8 +27,8 @@ const handleSubmit = async (e) => {
   setIsLoading(true);
 
   try {
-    const response = await axios.post(
-      "http://localhost:3000/api/users/login",
+    const response = await api.post(
+      "/users/login",
       { email, password }
     );
 

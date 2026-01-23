@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Eye, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "@/lib/api";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,8 +34,8 @@ const Transaksi = () => {
      FETCH TRANSAKSI
   ========================= */
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/bookings/transactions")
+    api
+      .get("/bookings/transactions")
       .then((res) => setTransactions(res.data))
       .catch((err) =>
         console.error("gagal ambil transaksi:", err.response?.data || err)
@@ -175,15 +175,13 @@ const Transaksi = () => {
                       </span>
                     </td>
                     <td className="px-5 py-4">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() =>
-                          navigate(`/transaksi/detail/${tx.id}`)
-                        }
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
+  <Button
+    size="icon"
+    variant="ghost"
+    onClick={() => navigate(`/transactions/${tx.id}`)}
+  >
+    <Eye className="h-4 w-4" />
+  </Button>
                     </td>
                   </tr>
                 );

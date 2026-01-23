@@ -1,15 +1,17 @@
-import { forwardRef } from "react";
+import { forwardRef, ButtonHTMLAttributes } from "react";
 import { ChevronDown } from "lucide-react";
 
-interface UserDropdownProps {
+interface UserDropdownProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   userName?: string;
 }
 
 const UserDropdown = forwardRef<HTMLButtonElement, UserDropdownProps>(
-  ({ userName }, ref) => {
+  ({ userName, ...props }, ref) => {
     return (
       <button
         ref={ref}
+        type="button"
+        {...props}
         className="flex items-center gap-2 hover:opacity-80 transition-opacity"
       >
         <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">

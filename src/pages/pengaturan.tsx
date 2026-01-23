@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import api from "@/lib/api";
 
 const USER_ID = 4; // ⬅️ sementara (nanti dari auth)
 
@@ -25,10 +26,9 @@ const [confirmPassword, setConfirmPassword] = useState("");
      FETCH PROFILE
   ========================= */
   useEffect(() => {
-    fetch(`http://localhost:3000/api/users/profile/${USER_ID}`)
-      .then(res => res.json())
-      .then(data => {
-        setProfile(data);
+    api.get(`/users/profile/${USER_ID}`)
+      .then(res => {
+        setProfile(res.data);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -60,26 +60,18 @@ const handleSave = async () => {
 
   try {
     // update profile
-    await fetch(`http://localhost:3000/api/users/profile/${USER_ID}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: profile.name,
-        phone: profile.phone,
-        gender: profile.gender,
-        address: profile.address
-      })
+    await api.put(`/users/profile/${USER_ID}`, {
+      name: profile.name,
+      phone: profile.phone,
+      gender: profile.gender,
+      address: profile.address
     });
 
     // update account (email / password)
     if (profile.email || newPassword) {
-      await fetch(`http://localhost:3000/api/users/account/${USER_ID}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: profile.email,
-          password: newPassword || null
-        })
+      await api.put(`/users/account/${USER_ID}`, {
+        email: profile.email,
+        password: newPassword || null
       });
     }
 

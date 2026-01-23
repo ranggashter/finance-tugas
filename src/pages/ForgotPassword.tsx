@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import api from "@/lib/api";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -21,11 +22,15 @@ const ForgotPassword = () => {
 
     setIsLoading(true);
     
-    // Simulate sending reset link - replace with actual logic
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const response = await api.post("/forgot-password", { email });
       toast.success("Link reset password telah dikirim ke email Anda");
-    }, 1500);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || "Terjadi kesalahan saat mengirim link reset password";
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

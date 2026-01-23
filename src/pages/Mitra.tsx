@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "@/lib/api";
 
 interface Mitra {
   id: number;
@@ -20,8 +20,8 @@ const Mitra = () => {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3000/api/users/mitra")
+    api
+      .get("/users/mitra")
       .then(res => {
         setMitraData(res.data);
       })
